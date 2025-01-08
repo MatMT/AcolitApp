@@ -4,14 +4,16 @@ import { Button } from '../components/ui/button';
 export const AcolyteList = ({ acolytes, onDelete, onClear }) => {
     return (
         <Card className="mb-6">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Lista de Acólitos</CardTitle>
-                <Button onClick={onClear} className="bg-red-600 hover:bg-red-700">
-                    Limpiar Lista
-                </Button>
+            <CardHeader>
+                <div className="flex flex-wrap flex-row items-center md:justify-between justify-center gap-5">
+                    <CardTitle>Lista de Acólitos</CardTitle>
+                    <Button onClick={onClear} className="bg-red-600 hover:bg-red-700 md:w-auto w-full">
+                        Limpiar Lista
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
                     <div>
                         <h3 className="font-bold mb-2">Mayores</h3>
                         <ul>

@@ -10,8 +10,8 @@ export const AcolyteForm = ({ newAcolyte, setNewAcolyte, addAcolyte }) => {
                 <CardTitle>Agregar Acólito</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex gap-4">
-                    <div className="flex-1">
+                <div className="flex flex-wrap gap-4 place-content-center">
+                    <div className="flex-auto md:flex-1">
                         <Label htmlFor="name">Nombre</Label>
                         <Input
                             id="name"
@@ -31,8 +31,8 @@ export const AcolyteForm = ({ newAcolyte, setNewAcolyte, addAcolyte }) => {
                             Es Mayor
                         </label>
                     </div>
-                    <div className="flex items-end">
-                        <Button onClick={addAcolyte}>Agregar</Button>
+                    <div className="flex md:flex-none flex-auto items-end">
+                        <Button onClick={addAcolyte} className='md:w-auto w-full'>Agregar</Button>
                     </div>
                 </div>
             </CardContent>

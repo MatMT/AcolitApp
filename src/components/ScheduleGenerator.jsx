@@ -20,8 +20,8 @@ export const ScheduleGenerator = ({
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    <div className="flex gap-4 items-end">
-                        <div>
+                    <div className="flex gap-4 flex-wrap items-end">
+                        <div className='flex-auto'>
                             <Label htmlFor="months">Número de meses</Label>
                             <Input
                                 id="months"
@@ -33,7 +33,7 @@ export const ScheduleGenerator = ({
                                 className="w-24"
                             />
                         </div>
-                        <div>
+                        <div className='flex-auto'>
                             <Label htmlFor="adultRatio">Número de mayores por misa</Label>
                             <Input
                                 id="adultRatio"
@@ -46,23 +46,23 @@ export const ScheduleGenerator = ({
                             />
                         </div>
                     </div>
-                    <div className="flex gap-4">
-                        <Button onClick={generateExcel}>Exportar a Excel</Button>
+                    <div className="flex flex-wrap gap-4">
+                        <Button onClick={generateExcel} className='flex-auto'>Exportar a Excel</Button>
                         <Button
                             onClick={generatePDF}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 flex-auto"
                         >
                             Exportar Calendario a PDF
                         </Button>
                         <Button
                             onClick={generateReportExcel}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-blue-600 hover:bg-blue-700 flex-auto"
                         >
                             Reporte a Excel
                         </Button>
                         <Button
                             onClick={generateReportPDF}
-                            className="bg-purple-600 hover:bg-purple-700"
+                            className="bg-purple-600 hover:bg-purple-700 flex-auto"
                         >
                             Reporte a PDF
                         </Button>
