@@ -21,7 +21,7 @@ export const AcolyteList = ({ acolytes, onDelete, onClear, onResetCounts }) => {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
                     <div>
                         <h3 className="font-bold mb-2">Mayores</h3>
                         <ul>

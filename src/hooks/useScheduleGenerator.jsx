@@ -1,15 +1,24 @@
 import { useState } from 'react';
-import { useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 export const useScheduleGenerator = (acolytes) => {
-    const [scheduleMonths, setScheduleMonths] = useState(3);
-    const [adultRatio, setAdultRatio] = useState(2); // Número de adultos por misa
+    const [scheduleMonths, setScheduleMonths] = useState(12);
+    const [adultRatio, setAdultRatio] = useState(2);
     const [participationHistory, setParticipationHistory] = useState(() => {
-        const savedData = localStorage.getItem('participationHistory');
-        return savedData ? JSON.parse(savedData) : [];
+        return acolytes.map(acolyte => ({
+            id: acolyte.id,
+            name: acolyte.name,
+            isAdult: acolyte.isAdult,
+            participations: 0,
+            lastParticipation: null,
+            participationsThisMonth: 0,
+            // Registro de con quién ha participado cada miembro
+            teamHistory: Object.fromEntries(
+                acolytes.map(a => [a.id, 0])
+            )
+        }));
     });
 
     // Sincronizar participationHistory con acolytes y sanear valores extremos
@@ -41,12 +50,17 @@ export const useScheduleGenerator = (acolytes) => {
                 };
         });
 
-        setParticipationHistory(updatedHistory);
-        localStorage.setItem('participationHistory', JSON.stringify(updatedHistory));
-    }, [acolytes]);
+        // Ordena por número de participaciones y última participación
+        const sortedMembers = notLastWeek.sort((a, b) => {
+            const participationDiff = a.participations - b.participations;
+            if (participationDiff !== 0) return participationDiff;
+            
+            const aLastPart = a.lastParticipation ? a.lastParticipation.getTime() : 0;
+            const bLastPart = b.lastParticipation ? b.lastParticipation.getTime() : 0;
+            return aLastPart - bLastPart;
+        });
 
-    const updateLocalStorage = (data) => {
-        localStorage.setItem('participationHistory', JSON.stringify(data));
+        return sortedMembers.slice(0, Math.min(count * 2, sortedMembers.length));
     };
 
     // Función para calcular estadísticas de participación esperada
@@ -174,6 +188,19 @@ export const useScheduleGenerator = (acolytes) => {
     const generateSchedule = (months) => {
         const schedule = [];
         const startDate = new Date();
+        
+        let currentHistory = acolytes.map(acolyte => ({
+            id: acolyte.id,
+            name: acolyte.name,
+            isAdult: acolyte.isAdult,
+            participations: 0,
+            lastParticipation: null,
+            participationsThisMonth: 0,
+            teamHistory: Object.fromEntries(
+                acolytes.map(a => [a.id, 0])
+            )
+        }));
+
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + months);
 
@@ -209,7 +236,12 @@ export const useScheduleGenerator = (acolytes) => {
                 const selectedAdults = selectAcolytesForMass(adults, adultRatio, lastWeekAdults, monthCounts);
                 const selectedMinors = selectAcolytesForMass(minors, minorsNeeded, lastWeekMinors, monthCounts);
 
-                day.team = [...selectedMinors, ...selectedAdults];
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            if (d.getDay() === 0) {
+                const day = {
+                    date: new Date(d),
+                    team: []
+                };
 
                 // Actualizar participaciones en el historial de trabajo
                 day.team.forEach(member => {
