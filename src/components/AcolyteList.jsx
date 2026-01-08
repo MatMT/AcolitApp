@@ -1,14 +1,24 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 
-export const AcolyteList = ({ acolytes, onDelete, onClear }) => {
+export const AcolyteList = ({ acolytes, onDelete, onClear, onResetCounts }) => {
     return (
         <Card className="mb-6">
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Lista de Acólitos</CardTitle>
-                <Button onClick={onClear} className="bg-red-600 hover:bg-red-700">
-                    Limpiar Lista
-                </Button>
+                <div>
+                    <CardTitle>Lista de Acólitos</CardTitle>
+                    <p className="text-sm text-gray-500 mt-1">
+                        💾 Guardado automáticamente en el navegador • Total: {acolytes.length} acólitos
+                    </p>
+                </div>
+                <div className="flex gap-2">
+                    <Button onClick={onResetCounts} className="bg-amber-600 hover:bg-amber-700">
+                        Reiniciar Participaciones
+                    </Button>
+                    <Button onClick={onClear} className="bg-red-600 hover:bg-red-700">
+                        Limpiar Lista
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 gap-4">
