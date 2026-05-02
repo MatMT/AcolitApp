@@ -158,7 +158,6 @@ export const useScheduleGenerator = (acolytes) => {
                 const day = { date: currentDate, team: [] };
 
                 if (isFirstSunday) {
-                    console.log("Generating first sunday. initialTeam:", initialTeam);
                     const adults = workingHistory.filter(a => a.isAdult);
                     const minors = workingHistory.filter(a => !a.isAdult);
                     const minorsNeeded = 4 - adultRatio;

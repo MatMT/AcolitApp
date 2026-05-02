@@ -15,7 +15,7 @@ export const useAcolytes = () => {
         if (newAcolyte.name.trim()) {
             setAcolytes([...acolytes, {
                 ...newAcolyte,
-                id: Date.now(),
+                id: crypto.randomUUID(),
                 number: acolytes.length + 1
             }]);
             setNewAcolyte({ name: '', isAdult: false });
@@ -90,7 +90,7 @@ export const useAcolytes = () => {
                 importedAcolytes.push({
                     name: `${nombre} ${apellido}`,
                     isAdult,
-                    id: Date.now() + index,
+                    id: crypto.randomUUID(),
                     number: acolytes.length + importedAcolytes.length + 1
                 });
             });
