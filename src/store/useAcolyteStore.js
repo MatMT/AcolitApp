@@ -84,11 +84,12 @@ export const useAcolyteStore = create(
                             return;
                         }
 
-                        const clasificacion = clasificacionRaw.toLowerCase();
+                        const clasificacion = clasificacionRaw.trim().toLowerCase();
                         let isAdult;
-                        if (['mayor', 'adulto', 'a', 'm'].some((k) => clasificacion.includes(k))) {
+                        // Usar comparación exacta para evitar que 'm' haga match con 'menor'
+                        if (clasificacion === 'mayor' || clasificacion === 'adulto' || clasificacion === 'a') {
                             isAdult = true;
-                        } else if (['menor', 'niño', 'n'].some((k) => clasificacion.includes(k))) {
+                        } else if (clasificacion === 'menor' || clasificacion === 'niño' || clasificacion === 'n' || clasificacion === 'm') {
                             isAdult = false;
                         } else {
                             errors.push(`Línea ${lineNumber}: Clasificación no reconocida "${clasificacionRaw}"`);
