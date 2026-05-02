@@ -1,41 +1,21 @@
-import { useAcolytes } from './hooks/useAcolytes';
-import { useScheduleGenerator } from './hooks/useScheduleGenerator';
+import { useEffect } from 'react';
 import { AcolyteForm } from './components/AcolyteForm';
 import { AcolyteList } from './components/AcolyteList';
 import { ScheduleGenerator } from './components/ScheduleGenerator';
 import { StatsCard } from './components/StatsCard';
 import { CalendarPreview } from './components/CalendarPreview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { useAcolyteStore } from './store/useAcolyteStore';
+import { useScheduleStore } from './store/useScheduleStore';
 
 const App = () => {
-    const {
-        acolytes,
-        newAcolyte,
-        setNewAcolyte,
-        addAcolyte,
-        deleteAcolyte,
-        clearAcolytes,
-        importFromCSV,
-        exportToCSV
-    } = useAcolytes();
+    const { acolytes } = useAcolyteStore();
+    const { syncHistoryWithAcolytes } = useScheduleStore();
 
-    const {
-        scheduleMonths,
-        setScheduleMonths,
-        adultRatio,
-        setAdultRatio,
-        generateReportExcel,
-        generateReportPDF,
-        generateExcel,
-        generatePDF,
-        calculateExpectedParticipations,
-        participationHistory,
-        generateSchedule,
-        generateSchedulePreview,
-        resetParticipations,
-        initialTeam,
-        setInitialTeam,
-    } = useScheduleGenerator(acolytes);
+    // Sincronizar el historial de participaciones cuando cambia la lista de acólitos
+    useEffect(() => {
+        syncHistoryWithAcolytes(acolytes);
+    }, [acolytes]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 text-slate-800 font-sans selection:bg-indigo-200 selection:text-indigo-900">
@@ -54,7 +34,7 @@ const App = () => {
                 </div>
 
                 <Tabs defaultValue="acolytes" className="flex flex-col md:flex-row gap-6">
-                    {/* Navegación lateral (Desktop) / Superior (Mobile) */}
+                    {/* Navegación lateral */}
                     <div className="w-full md:w-64 shrink-0">
                         <div className="sticky top-8">
                             <TabsList className="w-full">
@@ -70,10 +50,6 @@ const App = () => {
                                     <span className="text-xl">📊</span>
                                     <span>Estadísticas</span>
                                 </TabsTrigger>
-                                {/* <TabsTrigger value="preview" className="w-full flex items-center gap-3" disabled={acolytes.length === 0}>
-                                    <span className="text-xl">📅</span>
-                                    <span>Vista Previa</span>
-                                </TabsTrigger> */}
                             </TabsList>
 
                             {acolytes.length === 0 && (
@@ -87,56 +63,22 @@ const App = () => {
                     {/* Contenido principal */}
                     <div className="flex-1 min-w-0">
                         <TabsContent value="acolytes" className="transition-all">
-                            <AcolyteForm
-                                newAcolyte={newAcolyte}
-                                setNewAcolyte={setNewAcolyte}
-                                addAcolyte={addAcolyte}
-                                importFromCSV={importFromCSV}
-                                exportToCSV={exportToCSV}
-                            />
-
-                            <AcolyteList
-                                acolytes={acolytes}
-                                onDelete={deleteAcolyte}
-                                onClear={clearAcolytes}
-                                onResetCounts={resetParticipations}
-                            />
+                            <AcolyteForm />
+                            <AcolyteList />
                         </TabsContent>
 
                         {acolytes.length > 0 && (
                             <>
                                 <TabsContent value="stats" className="transition-all">
-                                    <StatsCard
-                                        acolytes={acolytes}
-                                        scheduleMonths={scheduleMonths}
-                                        adultRatio={adultRatio}
-                                        calculateExpectedParticipations={calculateExpectedParticipations}
-                                        participationHistory={participationHistory}
-                                    />
+                                    <StatsCard />
                                 </TabsContent>
 
                                 <TabsContent value="preview" className="transition-all">
-                                    <CalendarPreview
-                                        scheduleMonths={scheduleMonths}
-                                        adultRatio={adultRatio}
-                                        generateSchedulePreview={generateSchedulePreview}
-                                    />
+                                    <CalendarPreview />
                                 </TabsContent>
 
                                 <TabsContent value="export" className="transition-all">
-                                    <ScheduleGenerator
-                                        scheduleMonths={scheduleMonths}
-                                        setScheduleMonths={setScheduleMonths}
-                                        adultRatio={adultRatio}
-                                        setAdultRatio={setAdultRatio}
-                                        generateExcel={generateExcel}
-                                        generatePDF={generatePDF}
-                                        generateReportPDF={generateReportPDF}
-                                        generateReportExcel={generateReportExcel}
-                                        initialTeam={initialTeam}
-                                        setInitialTeam={setInitialTeam}
-                                        acolytes={acolytes}
-                                    />
+                                    <ScheduleGenerator />
                                 </TabsContent>
                             </>
                         )}

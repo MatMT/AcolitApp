@@ -3,20 +3,18 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useState } from 'react';
+import { useAcolyteStore } from '../store/useAcolyteStore';
+import { useScheduleStore } from '../store/useScheduleStore';
 
-export const ScheduleGenerator = ({
-    scheduleMonths,
-    setScheduleMonths,
-    adultRatio,
-    setAdultRatio,
-    generateExcel,
-    generatePDF,
-    generateReportPDF,
-    generateReportExcel,
-    initialTeam = [],
-    setInitialTeam,
-    acolytes = [],
-}) => {
+export const ScheduleGenerator = () => {
+    const { acolytes } = useAcolyteStore();
+    const {
+        scheduleMonths, setScheduleMonths,
+        adultRatio, setAdultRatio,
+        initialTeam, setInitialTeam,
+        generateExcel, generatePDF,
+        generateReportPDF, generateReportExcel,
+    } = useScheduleStore();
     const [savedStatus, setSavedStatus] = useState(false);
 
     const handleInitialTeamChange = (index, value) => {
