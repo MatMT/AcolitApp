@@ -2,31 +2,39 @@ import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { useState } from 'react';
 
 export const ScheduleGenerator = ({
-                                      scheduleMonths,
-                                      setScheduleMonths,
-                                      adultRatio,
-                                      setAdultRatio,
-                                      generateExcel,
-                                      generatePDF,
-                                      generateReportPDF,
-                                      generateReportExcel,
-                                      initialTeam = [],
-                                      setInitialTeam,
-                                      acolytes = [],
-                                  }) => {
+    scheduleMonths,
+    setScheduleMonths,
+    adultRatio,
+    setAdultRatio,
+    generateExcel,
+    generatePDF,
+    generateReportPDF,
+    generateReportExcel,
+    initialTeam = [],
+    setInitialTeam,
+    acolytes = [],
+}) => {
+    const [savedStatus, setSavedStatus] = useState(false);
+
     const handleInitialTeamChange = (index, value) => {
         const newTeam = [...initialTeam];
-        // Complete the array with empty strings if not initialized
         while (newTeam.length < 4) newTeam.push('');
-        newTeam[index] = value;
-        setInitialTeam(newTeam.filter(Boolean)); // remove empty entries
+        newTeam[index] = value === 'none' ? '' : value;
+        setInitialTeam(newTeam);
+        setSavedStatus(false);
+    };
+
+    const handleSaveInitialTeam = () => {
+        setSavedStatus(true);
+        setTimeout(() => setSavedStatus(false), 3000);
     };
 
     const adultOptions = acolytes.filter(a => a.isAdult);
     const minorOptions = acolytes.filter(a => !a.isAdult);
-    
+
     // Convert to exactly 4 slots for UI
     const slots = [0, 1, 2, 3].map(i => {
         const isAdultSlot = i < adultRatio;
@@ -40,42 +48,7 @@ export const ScheduleGenerator = ({
 
     return (
         <div className="space-y-8">
-            {/* 1. Asignacion Manual */}
-            <Card className="border-slate-200/60 shadow-lg shadow-indigo-100/50 bg-white/80 backdrop-blur-xl">
-                <CardHeader className="border-b border-slate-100 pb-4">
-                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <span className="bg-emerald-100 text-emerald-600 p-2 rounded-lg">🎯</span>
-                        Asignación Manual para la Primera Fecha
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <p className="text-sm text-slate-600 mb-6 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
-                        (Opcional) Define exactamente quiénes acólitarán en el primer domingo del período. El sistema continuará automáticamente a partir del segundo domingo evitando repeticiones.
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-5">
-                        {slots.map((slot) => (
-                            <div key={slot.index}>
-                                <Label htmlFor={`slot-${slot.index}`}>
-                                    {slot.isAdultSlot ? `Mayor ${slot.index + 1}` : `Menor ${slot.index + 1 - adultRatio}`}
-                                </Label>
-                                <select
-                                    id={`slot-${slot.index}`}
-                                    value={slot.value}
-                                    onChange={(e) => handleInitialTeamChange(slot.index, e.target.value)}
-                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-                                >
-                                    <option value="">-- Selección Aleatoria --</option>
-                                    {slot.options.map(acolyte => (
-                                        <option key={acolyte.id} value={acolyte.id}>
-                                            {acolyte.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+
 
             {/* 2. Exportar Calendario */}
             <Card className="border-slate-200/60 shadow-lg shadow-indigo-100/50 bg-white/80 backdrop-blur-xl">
@@ -178,6 +151,51 @@ export const ScheduleGenerator = ({
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 1. Asignacion Manual */}
+            <Card className="border-slate-200/60 shadow-lg shadow-indigo-100/50 bg-white/80 backdrop-blur-xl">
+                <CardHeader className="border-b border-slate-100 pb-4">
+                    <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <span className="bg-emerald-100 text-emerald-600 p-2 rounded-lg">🎯</span>
+                        Asignación Manual para la Primera Fecha
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                    <p className="text-sm text-slate-600 mb-6 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
+                        (Opcional) Define exactamente quiénes acólitarán en el primer domingo del período. El sistema continuará automáticamente a partir del segundo domingo evitando repeticiones.
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-5 mb-6">
+                        {slots.map((slot) => (
+                            <div key={slot.index}>
+                                <Label htmlFor={`slot-${slot.index}`}>
+                                    {slot.isAdultSlot ? `Mayor ${slot.index + 1}` : `Menor ${slot.index + 1 - adultRatio}`}
+                                </Label>
+                                <select
+                                    id={`slot-${slot.index}`}
+                                    value={slot.value}
+                                    onChange={(e) => handleInitialTeamChange(slot.index, e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                                >
+                                    <option value="">-- Selección Aleatoria --</option>
+                                    {slot.options.map(acolyte => (
+                                        <option key={acolyte.id} value={acolyte.id}>
+                                            {acolyte.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex justify-end">
+                        <Button 
+                            onClick={handleSaveInitialTeam}
+                            className={`px-6 font-semibold transition-all shadow-sm ${savedStatus ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-slate-800 hover:bg-slate-900 text-white'}`}
+                        >
+                            {savedStatus ? '✅ Guardado y Listo' : '💾 Guardar Asignación'}
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

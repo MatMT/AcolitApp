@@ -87,6 +87,7 @@ export const useScheduleGenerator = (acolytes) => {
     };
 
     // Sistema de Pilas: Prioriza a los que no han participado en el mes, luego a los de menores participaciones totales, luego a los que hace más tiempo participaron.
+    // Dentro de cada nivel de prioridad, baraja aleatoriamente para maximizar la variedad de equipos.
     const selectAcolytesForMass = (availableAcolytes, needed, lastWeekTeam = [], currentDate) => {
         if (availableAcolytes.length === 0) return [];
 
@@ -98,25 +99,36 @@ export const useScheduleGenerator = (acolytes) => {
         const pickFromPool = (pool, n) => {
             if (pool.length === 0 || n <= 0) return [];
 
-            const sorted = [...pool].sort((a, b) => {
-                const aServedThisMonth = a.lastServedDate && new Date(a.lastServedDate).getFullYear() === currentDate.getFullYear() && new Date(a.lastServedDate).getMonth() === currentDate.getMonth();
-                const bServedThisMonth = b.lastServedDate && new Date(b.lastServedDate).getFullYear() === currentDate.getFullYear() && new Date(b.lastServedDate).getMonth() === currentDate.getMonth();
+            // PASO 1: Fisher-Yates shuffle para determinar orden aleatorio dentro de cada nivel de prioridad
+            const shuffled = [...pool];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
 
+            // PASO 2: Ordenar SOLO por los 2 criterios de equidad.
+            // NO usamos lastServedDate como desempate porque crea ciclos deterministas
+            // (siempre escoge los mismos subgrupos). El shuffle previo garantiza variedad.
+            const sorted = shuffled.sort((a, b) => {
+                const aServedThisMonth = a.lastServedDate
+                    && new Date(a.lastServedDate).getFullYear() === currentDate.getFullYear()
+                    && new Date(a.lastServedDate).getMonth() === currentDate.getMonth();
+                const bServedThisMonth = b.lastServedDate
+                    && new Date(b.lastServedDate).getFullYear() === currentDate.getFullYear()
+                    && new Date(b.lastServedDate).getMonth() === currentDate.getMonth();
+
+                // Criterio 1: quien NO sirvió este mes va primero
                 if (aServedThisMonth !== bServedThisMonth) {
                     return aServedThisMonth ? 1 : -1;
                 }
 
+                // Criterio 2: quien tiene menos participaciones totales va primero
                 if (a.participations !== b.participations) {
                     return a.participations - b.participations;
                 }
 
-                if (a.lastServedDate !== b.lastServedDate) {
-                    if (!a.lastServedDate) return -1;
-                    if (!b.lastServedDate) return 1;
-                    return new Date(a.lastServedDate).getTime() - new Date(b.lastServedDate).getTime();
-                }
-
-                return Math.random() - 0.5;
+                // Mismo nivel de prioridad → el orden del shuffle decide (variedad garantizada)
+                return 0;
             });
 
             return sorted.slice(0, n);
@@ -145,14 +157,60 @@ export const useScheduleGenerator = (acolytes) => {
                 const currentDate = new Date(d);
                 const day = { date: currentDate, team: [] };
 
-                if (isFirstSunday && initialTeam && initialTeam.length > 0) {
-                    const teamMembers = initialTeam.map(id => workingHistory.find(a => a.id === id)).filter(Boolean);
-                    if (teamMembers.length > 0) {
-                        day.team = teamMembers;
-                    }
-                }
+                if (isFirstSunday) {
+                    console.log("Generating first sunday. initialTeam:", initialTeam);
+                    const adults = workingHistory.filter(a => a.isAdult);
+                    const minors = workingHistory.filter(a => !a.isAdult);
+                    const minorsNeeded = 4 - adultRatio;
+                    
+                    let dayTeam = [null, null, null, null];
+                    let manuallyAssignedIds = [];
 
-                if (day.team.length === 0) {
+                    // 1. Colocar los asignados manualmente respetando sus posiciones
+                    if (initialTeam && initialTeam.length > 0) {
+                        for (let i = 0; i < 4; i++) {
+                            if (initialTeam[i]) {
+                                const acolyte = workingHistory.find(a => String(a.id) === String(initialTeam[i]));
+                                if (acolyte) {
+                                    dayTeam[i] = acolyte;
+                                    manuallyAssignedIds.push(acolyte.id);
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Llenar los espacios vacíos automáticamente
+                    const availableAdults = adults.filter(a => !manuallyAssignedIds.includes(a.id));
+                    const availableMinors = minors.filter(a => !manuallyAssignedIds.includes(a.id));
+
+                    let neededAdults = 0;
+                    for (let i = 0; i < adultRatio; i++) {
+                        if (!dayTeam[i]) neededAdults++;
+                    }
+                    let neededMinors = 0;
+                    for (let i = adultRatio; i < 4; i++) {
+                        if (!dayTeam[i]) neededMinors++;
+                    }
+
+                    const selectedAdults = selectAcolytesForMass(availableAdults, neededAdults, [], currentDate);
+                    const selectedMinors = selectAcolytesForMass(availableMinors, neededMinors, [], currentDate);
+
+                    // Insertar en los espacios vacíos
+                    let adultIdx = 0;
+                    for (let i = 0; i < adultRatio; i++) {
+                        if (!dayTeam[i] && adultIdx < selectedAdults.length) {
+                            dayTeam[i] = selectedAdults[adultIdx++];
+                        }
+                    }
+                    let minorIdx = 0;
+                    for (let i = adultRatio; i < 4; i++) {
+                        if (!dayTeam[i] && minorIdx < selectedMinors.length) {
+                            dayTeam[i] = selectedMinors[minorIdx++];
+                        }
+                    }
+
+                    day.team = dayTeam.filter(Boolean);
+                } else {
                     const adults = workingHistory.filter(a => a.isAdult);
                     const minors = workingHistory.filter(a => !a.isAdult);
                     const minorsNeeded = 4 - adultRatio;
@@ -163,7 +221,8 @@ export const useScheduleGenerator = (acolytes) => {
                     const selectedAdults = selectAcolytesForMass(adults, adultRatio, lastWeekAdults, currentDate);
                     const selectedMinors = selectAcolytesForMass(minors, minorsNeeded, lastWeekMinors, currentDate);
 
-                    day.team = [...selectedMinors, ...selectedAdults];
+                    // Poner a los adultos primero para que encajen en las columnas "Mayor 1, Mayor 2"
+                    day.team = [...selectedAdults, ...selectedMinors];
                 }
 
                 day.team.forEach(member => {

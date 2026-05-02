@@ -13,23 +13,14 @@ Card.propTypes = {
     className: PropTypes.string,
 };
 
-export const CardHeader = ({children}) => {
-    CardHeader.propTypes = {
-        children: PropTypes.node,
-    };
-    return <div className="mb-4">{children}</div>;
+export const CardHeader = ({children, className = '', ...props}) => {
+    return <div className={`mb-4 ${className}`} {...props}>{children}</div>;
 };
 
-export const CardTitle = ({children}) => {
-    CardTitle.propTypes = {
-        children: PropTypes.node,
-    };
-    return <h2 className="text-xl font-semibold">{children}</h2>;
+export const CardTitle = ({children, className = '', ...props}) => {
+    return <h2 className={`text-xl font-semibold ${className}`} {...props}>{children}</h2>;
 };
 
-export const CardContent = ({children}) => {
-    CardContent.propTypes = {
-        children: PropTypes.node,
-    };
-    return <div>{children}</div>;
+export const CardContent = ({children, className = '', ...props}) => {
+    return <div className={className} {...props}>{children}</div>;
 };
