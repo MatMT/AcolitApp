@@ -1,8 +1,10 @@
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { useMemo, useState } from 'react';
+import { useScheduleStore } from '../store/useScheduleStore';
 
-export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePreview }) => {
+export const CalendarPreview = () => {
+    const { scheduleMonths, adultRatio, generatePreview } = useScheduleStore();
     const [refreshKey, setRefreshKey] = useState(0);
     
     // Generar una paleta de colores para cada acólito
@@ -28,12 +30,9 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
 
     // Generar vista previa del calendario sin actualizar el historial
     const previewSchedule = useMemo(() => {
-        if (!generateSchedulePreview) return [];
-        
-        // Generar solo las primeras 8 semanas para vista previa
-        const { schedule } = generateSchedulePreview(scheduleMonths);
+        const { schedule } = generatePreview();
         return schedule.slice(0, 8); // Mostrar máximo 8 domingos
-    }, [scheduleMonths, adultRatio, generateSchedulePreview, refreshKey]);
+    }, [scheduleMonths, adultRatio, generatePreview, refreshKey]);
 
     // Crear un mapa de colores por nombre de acólito
     const colorMap = useMemo(() => {

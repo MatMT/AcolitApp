@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { useAcolyteStore } from '../store/useAcolyteStore';
+import { useScheduleStore } from '../store/useScheduleStore';
 
-export const AcolyteList = ({ acolytes, onDelete, onClear, onResetCounts }) => {
+export const AcolyteList = () => {
+    const { acolytes, deleteAcolyte, clearAcolytes } = useAcolyteStore();
+    const { resetParticipations, clearHistory } = useScheduleStore();
     const [isExpanded, setIsExpanded] = useState(false);
+
+    const handleClearAll = () => {
+        clearAcolytes();
+        clearHistory();
+    };
 
     return (
         <Card className="mb-8 border-slate-200/60 shadow-lg shadow-indigo-100/50 bg-white/80 backdrop-blur-xl overflow-hidden transition-all duration-300">
@@ -29,10 +38,10 @@ export const AcolyteList = ({ acolytes, onDelete, onClear, onResetCounts }) => {
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                        <Button onClick={onResetCounts} variant="outline" className="flex-1 md:flex-none text-amber-600 border-amber-200 hover:bg-amber-50 hover:border-amber-300 font-semibold shadow-sm">
+                        <Button onClick={resetParticipations} variant="outline" className="flex-1 md:flex-none text-amber-600 border-amber-200 hover:bg-amber-50 hover:border-amber-300 font-semibold shadow-sm">
                             🔄 Reiniciar
                         </Button>
-                        <Button onClick={onClear} variant="outline" className="flex-1 md:flex-none text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 font-semibold shadow-sm">
+                        <Button onClick={handleClearAll} variant="outline" className="flex-1 md:flex-none text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 font-semibold shadow-sm">
                             🗑️ Limpiar Todo
                         </Button>
                     </div>
@@ -54,7 +63,7 @@ export const AcolyteList = ({ acolytes, onDelete, onClear, onResetCounts }) => {
                                         {acolyte.name}
                                     </span>
                                     <button
-                                        onClick={() => onDelete(acolyte.id)}
+                                        onClick={() => deleteAcolyte(acolyte.id)}
                                         className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                                         title="Eliminar acólito"
                                     >
@@ -80,7 +89,7 @@ export const AcolyteList = ({ acolytes, onDelete, onClear, onResetCounts }) => {
                                         {acolyte.name}
                                     </span>
                                     <button
-                                        onClick={() => onDelete(acolyte.id)}
+                                        onClick={() => deleteAcolyte(acolyte.id)}
                                         className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                                         title="Eliminar acólito"
                                     >

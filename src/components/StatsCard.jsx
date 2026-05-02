@@ -1,17 +1,15 @@
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { useMemo } from 'react';
+import { useAcolyteStore } from '../store/useAcolyteStore';
+import { useScheduleStore } from '../store/useScheduleStore';
 
-export const StatsCard = ({ 
-    acolytes, 
-    scheduleMonths, 
-    adultRatio, 
-    calculateExpectedParticipations,
-    participationHistory 
-}) => {
+export const StatsCard = () => {
+    const { acolytes } = useAcolyteStore();
+    const { scheduleMonths, adultRatio, participationHistory, getExpectedParticipations } = useScheduleStore();
+
     const stats = useMemo(() => {
-        if (!calculateExpectedParticipations) return null;
-        return calculateExpectedParticipations(scheduleMonths);
-    }, [scheduleMonths, acolytes, adultRatio, calculateExpectedParticipations]);
+        return getExpectedParticipations(acolytes);
+    }, [scheduleMonths, acolytes, adultRatio]);
 
     if (!stats) return null;
 
