@@ -31,7 +31,7 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
         if (!generateSchedulePreview) return [];
         
         // Generar solo las primeras 8 semanas para vista previa
-        const schedule = generateSchedulePreview(scheduleMonths);
+        const { schedule } = generateSchedulePreview(scheduleMonths);
         return schedule.slice(0, 8); // Mostrar máximo 8 domingos
     }, [scheduleMonths, adultRatio, generateSchedulePreview, refreshKey]);
 
@@ -57,27 +57,28 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
     }
 
     return (
-        <Card className="mb-6">
-            <CardHeader>
-                <div className="flex items-center justify-between">
+        <Card className="mb-8 border-slate-200/60 shadow-lg shadow-indigo-100/50 bg-white/80 backdrop-blur-xl">
+            <CardHeader className="border-b border-slate-100 pb-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <span>📅 Vista Previa del Calendario</span>
+                        <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <span className="bg-indigo-100 text-indigo-600 p-2 rounded-lg">📅</span>
+                            Vista Previa del Calendario
                         </CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-slate-500 mt-2 font-medium flex items-center gap-1">
                             {previewSchedule.length < 8 ? 'Todos los domingos' : 'Primeros 8 domingos'} • 
-                            Evita participaciones consecutivas
+                            El sistema previene repeticiones y balancea
                         </p>
                     </div>
                     <Button 
                         onClick={() => setRefreshKey(k => k + 1)}
-                        className="bg-indigo-600 hover:bg-indigo-700"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200"
                     >
-                        🔄 Regenerar
+                        🔄 Regenerar Simulación
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <div className="space-y-3">
                     {previewSchedule.map((day, index) => {
                         const minorsCount = day.team.filter(m => !m.isAdult).length;
@@ -121,7 +122,7 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
                                     </div>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     {day.team.map((member, idx) => {
                                         // Verificar si este acólito también estuvo la semana pasada
                                         const wasLastWeek = index > 0 && previewSchedule[index - 1].team.some(
@@ -131,14 +132,14 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`px-3 py-2 rounded-lg border-2 font-medium text-sm flex items-center gap-2 relative ${colorMap.get(member.name)}`}
+                                                className={`px-3 py-2.5 rounded-xl border-2 font-medium text-sm flex items-center gap-2 relative shadow-sm hover:shadow-md transition-shadow ${colorMap.get(member.name)}`}
                                             >
                                                 {wasLastWeek && (
-                                                    <span className="absolute -top-1 -right-1 text-xs bg-amber-500 text-white rounded-full w-5 h-5 flex items-center justify-center" title="Acolita consecutivo">
+                                                    <span className="absolute -top-2 -right-2 text-xs bg-rose-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md animate-bounce" title="Acolita consecutivo">
                                                         ⚠️
                                                     </span>
                                                 )}
-                                                <span className="text-lg">
+                                                <span className="text-lg bg-white/50 w-7 h-7 flex items-center justify-center rounded-lg">
                                                     {member.isAdult ? '👨‍👦' : '👶'}
                                                 </span>
                                                 <span className="truncate" title={member.name}>
@@ -154,15 +155,16 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
                 </div>
 
                 {/* Leyenda de colores */}
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold text-sm mb-3 text-gray-700">
-                        🎨 Leyenda de Acólitos
+                <div className="mt-8 bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
+                    <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        <span className="bg-slate-200 text-slate-600 p-1.5 rounded-md text-sm">🎨</span>
+                        Leyenda de Acólitos
                     </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {Array.from(colorMap.entries()).map(([name, colorClass]) => (
                             <div
                                 key={name}
-                                className={`px-2 py-1 rounded border text-xs font-medium truncate ${colorClass}`}
+                                className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold shadow-sm ${colorClass}`}
                                 title={name}
                             >
                                 {name}
@@ -171,11 +173,15 @@ export const CalendarPreview = ({ scheduleMonths, adultRatio, generateSchedulePr
                     </div>
                 </div>
 
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                        💡 <strong>Nota:</strong> El algoritmo evita automáticamente que los acólitos participen en domingos consecutivos, 
-                        dándoles descanso entre servicios. Los colores ayudan a identificar visualmente la distribución.
-                    </p>
+                <div className="mt-6 p-4 bg-blue-50/80 border border-blue-200 rounded-xl flex gap-3 items-start shadow-sm">
+                    <span className="text-xl">💡</span>
+                    <div>
+                        <p className="text-blue-900 font-bold">Nota sobre el algoritmo</p>
+                        <p className="text-blue-800 text-sm mt-1 leading-relaxed">
+                            El sistema evita que los acólitos participen en domingos consecutivos o repitan en el mismo mes si hay otros disponibles, 
+                            garantizando una distribución justa. Los colores ayudan a identificar visualmente la rotación en el calendario.
+                        </p>
+                    </div>
                 </div>
             </CardContent>
         </Card>

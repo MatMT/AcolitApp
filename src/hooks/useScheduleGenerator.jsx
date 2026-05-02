@@ -7,6 +7,7 @@ import 'jspdf-autotable';
 export const useScheduleGenerator = (acolytes) => {
     const [scheduleMonths, setScheduleMonths] = useState(3);
     const [adultRatio, setAdultRatio] = useState(2); // Número de adultos por misa
+    const [initialTeam, setInitialTeam] = useState([]); // Acolytes selected for the first date
     const [participationHistory, setParticipationHistory] = useState(() => {
         const savedData = localStorage.getItem('participationHistory');
         return savedData ? JSON.parse(savedData) : [];
@@ -31,6 +32,7 @@ export const useScheduleGenerator = (acolytes) => {
                     isAdult: acolyte.isAdult,
                     participations: sanitize(existing.participations),
                     lastMonthParticipations: sanitize(existing.lastMonthParticipations),
+                    lastServedDate: existing.lastServedDate || null,
                 }
                 : {
                     id: acolyte.id,
@@ -38,6 +40,7 @@ export const useScheduleGenerator = (acolytes) => {
                     isAdult: acolyte.isAdult,
                     participations: 0,
                     lastMonthParticipations: 0,
+                    lastServedDate: null,
                 };
         });
 
@@ -83,222 +86,123 @@ export const useScheduleGenerator = (acolytes) => {
         return count;
     };
 
-    // Prioriza: 1) No repetir en el mes 2) No repetir semana pasada 3) Menos participaciones 4) Aleatorio
-    const selectAcolytesForMass = (availableAcolytes, needed, lastWeekTeam = [], monthCounts) => {
+    // Sistema de Pilas: Prioriza a los que no han participado en el mes, luego a los de menores participaciones totales, luego a los que hace más tiempo participaron.
+    const selectAcolytesForMass = (availableAcolytes, needed, lastWeekTeam = [], currentDate) => {
         if (availableAcolytes.length === 0) return [];
 
         const lastWeekIds = lastWeekTeam.map(a => a.id);
+
         const notLastWeek = availableAcolytes.filter(a => !lastWeekIds.includes(a.id));
         const wasLastWeek = availableAcolytes.filter(a => lastWeekIds.includes(a.id));
 
-        const pickByMonthThenParticipation = (pool, n) => {
+        const pickFromPool = (pool, n) => {
             if (pool.length === 0 || n <= 0) return [];
 
-            const getMonthCount = (id) => (monthCounts.get(id) || 0);
-
-            // Seleccionar primero quienes tienen menor conteo mensual, empatando por participaciones
             const sorted = [...pool].sort((a, b) => {
-                const ma = getMonthCount(a.id);
-                const mb = getMonthCount(b.id);
-                if (ma !== mb) return ma - mb;
-                if (a.participations !== b.participations) return a.participations - b.participations;
+                const aServedThisMonth = a.lastServedDate && new Date(a.lastServedDate).getFullYear() === currentDate.getFullYear() && new Date(a.lastServedDate).getMonth() === currentDate.getMonth();
+                const bServedThisMonth = b.lastServedDate && new Date(b.lastServedDate).getFullYear() === currentDate.getFullYear() && new Date(b.lastServedDate).getMonth() === currentDate.getMonth();
+
+                if (aServedThisMonth !== bServedThisMonth) {
+                    return aServedThisMonth ? 1 : -1;
+                }
+
+                if (a.participations !== b.participations) {
+                    return a.participations - b.participations;
+                }
+
+                if (a.lastServedDate !== b.lastServedDate) {
+                    if (!a.lastServedDate) return -1;
+                    if (!b.lastServedDate) return 1;
+                    return new Date(a.lastServedDate).getTime() - new Date(b.lastServedDate).getTime();
+                }
+
                 return Math.random() - 0.5;
             });
 
-            // Intentar cubrir con el mínimo conteo mensual presente
-            const minMonth = getMonthCount(sorted[0].id);
-            const eligiblesMinMonth = sorted.filter(p => getMonthCount(p.id) === minMonth);
-            if (eligiblesMinMonth.length >= n) {
-                return eligiblesMinMonth.slice(0, n);
-            }
-
-            // Si no alcanza, tomar todos y completar del resto siguiendo el orden
-            const selected = [...eligiblesMinMonth];
-            const remaining = sorted.filter(p => !selected.includes(p));
-            const neededMore = n - selected.length;
-            selected.push(...remaining.slice(0, neededMore));
-            return selected;
+            return sorted.slice(0, n);
         };
 
-        // Primero, quienes NO estuvieron la semana pasada
-        const selectedFromNotLast = pickByMonthThenParticipation(notLastWeek, needed);
-        if (selectedFromNotLast.length >= needed) return selectedFromNotLast.slice(0, needed);
+        const selectedFromNotLast = pickFromPool(notLastWeek, needed);
+        if (selectedFromNotLast.length >= needed) return selectedFromNotLast;
 
-        // Completar si hace falta con quienes SÍ estuvieron la semana pasada
         const stillNeeded = needed - selectedFromNotLast.length;
-        const selectedFromLast = pickByMonthThenParticipation(wasLastWeek, stillNeeded);
+        const selectedFromLast = pickFromPool(wasLastWeek, stillNeeded);
         return [...selectedFromNotLast, ...selectedFromLast];
     };
 
-    // Función auxiliar para seleccionar de un pool de acólitos
-    const selectFromPool = (pool, needed) => {
-        if (pool.length === 0) return [];
-        
-        // Ordenar por participaciones (menor a mayor)
-        const sorted = [...pool].sort((a, b) => {
-            // Primero por participaciones
-            if (a.participations !== b.participations) {
-                return a.participations - b.participations;
+    const coreGenerateSchedule = (months) => {
+        const schedule = [];
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + months);
+
+        const workingHistory = participationHistory.map(p => ({ ...p }));
+        let lastWeekTeam = [];
+        let isFirstSunday = true;
+
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            if (d.getDay() === 0) {
+                const currentDate = new Date(d);
+                const day = { date: currentDate, team: [] };
+
+                if (isFirstSunday && initialTeam && initialTeam.length > 0) {
+                    const teamMembers = initialTeam.map(id => workingHistory.find(a => a.id === id)).filter(Boolean);
+                    if (teamMembers.length > 0) {
+                        day.team = teamMembers;
+                    }
+                }
+
+                if (day.team.length === 0) {
+                    const adults = workingHistory.filter(a => a.isAdult);
+                    const minors = workingHistory.filter(a => !a.isAdult);
+                    const minorsNeeded = 4 - adultRatio;
+
+                    const lastWeekAdults = lastWeekTeam.filter(a => a.isAdult);
+                    const lastWeekMinors = lastWeekTeam.filter(a => !a.isAdult);
+
+                    const selectedAdults = selectAcolytesForMass(adults, adultRatio, lastWeekAdults, currentDate);
+                    const selectedMinors = selectAcolytesForMass(minors, minorsNeeded, lastWeekMinors, currentDate);
+
+                    day.team = [...selectedMinors, ...selectedAdults];
+                }
+
+                day.team.forEach(member => {
+                    const acolyte = workingHistory.find(a => a.id === member.id);
+                    if (acolyte) {
+                        acolyte.participations++;
+                        acolyte.lastServedDate = currentDate.toISOString();
+                    }
+                });
+
+                lastWeekTeam = [...day.team];
+                schedule.push(day);
+                isFirstSunday = false;
             }
-            // Si tienen las mismas, usar aleatoriedad
-            return Math.random() - 0.5;
-        });
-
-        // Encontrar el mínimo de participaciones
-        const minParticipations = sorted[0].participations;
-        
-        // Obtener todos los que tienen el mínimo o uno más (para dar variedad)
-        const eligibles = sorted.filter(a => 
-            a.participations <= minParticipations + 1
-        );
-
-        // Si tenemos suficientes elegibles, seleccionar aleatoriamente de ellos
-        if (eligibles.length >= needed) {
-            // Mezclar aleatoriamente los elegibles
-            const shuffled = [...eligibles].sort(() => Math.random() - 0.5);
-            return shuffled.slice(0, needed);
         }
 
-        // Si no hay suficientes, tomar todos los elegibles y completar con los siguientes
-        const selected = [...eligibles];
-        const remaining = sorted.filter(a => !selected.includes(a));
-        const additionalNeeded = needed - selected.length;
-        
-        // Mezclar los restantes y tomar los necesarios
-        const shuffledRemaining = [...remaining].sort(() => Math.random() - 0.5);
-        selected.push(...shuffledRemaining.slice(0, additionalNeeded));
-
-        return selected;
+        return { schedule, finalHistory: workingHistory };
     };
 
     const generateSchedule = (months) => {
-        const schedule = [];
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + months);
-
-        // Crear una copia del historial de participaciones para trabajar
-        const workingHistory = participationHistory.map(p => ({ ...p }));
-        // Variable para guardar el equipo de la semana anterior
-        let lastWeekTeam = [];
-        // Conteo por mes para priorizar a quienes aún no han servido ese mes
-        let currentMonthKey = '';
-        let monthCounts = new Map(); // id -> veces en el mes
-
-        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-            if (d.getDay() === 0) {
-                const day = { date: new Date(d), team: [] };
-
-                // Resetear contador mensual si cambia el mes
-                const mk = `${d.getFullYear()}-${d.getMonth()}`;
-                if (mk !== currentMonthKey) {
-                    currentMonthKey = mk;
-                    monthCounts = new Map();
-                }
-
-                const adults = workingHistory.filter(a => a.isAdult);
-                const minors = workingHistory.filter(a => !a.isAdult);
-
-                const minorsNeeded = 4 - adultRatio;
-
-                // Filtrar el equipo anterior por tipo
-                const lastWeekAdults = lastWeekTeam.filter(a => a.isAdult);
-                const lastWeekMinors = lastWeekTeam.filter(a => !a.isAdult);
-
-                // Usar el nuevo algoritmo con prioridad mensual y evitando consecutivos
-                const selectedAdults = selectAcolytesForMass(adults, adultRatio, lastWeekAdults, monthCounts);
-                const selectedMinors = selectAcolytesForMass(minors, minorsNeeded, lastWeekMinors, monthCounts);
-
-                day.team = [...selectedMinors, ...selectedAdults];
-
-                // Actualizar participaciones en el historial de trabajo
-                day.team.forEach(member => {
-                    const acolyte = workingHistory.find(a => a.id === member.id);
-                    if (acolyte) {
-                        acolyte.participations++;
-                    }
-                    // Sumar conteo mensual
-                    monthCounts.set(member.id, (monthCounts.get(member.id) || 0) + 1);
-                });
-
-                // Guardar el equipo actual para la próxima iteración
-                lastWeekTeam = [...day.team];
-
-                schedule.push(day);
-            }
-        }
-
-        // Actualizar el historial de participaciones real
-        setParticipationHistory(workingHistory);
-        updateLocalStorage(workingHistory);
-
+        const { schedule, finalHistory } = coreGenerateSchedule(months);
+        setParticipationHistory(finalHistory);
+        updateLocalStorage(finalHistory);
         return schedule;
     };
 
-    // Función de vista previa que NO modifica el estado ni localStorage
     const generateSchedulePreview = (months) => {
-        const schedule = [];
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + months);
-
-        // Crear una copia del historial solo para la simulación
-        const workingHistory = participationHistory.map(p => ({ ...p }));
-        let lastWeekTeam = [];
-        let currentMonthKey = '';
-        let monthCounts = new Map();
-
-        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-            if (d.getDay() === 0) {
-                const day = { date: new Date(d), team: [] };
-
-                // Resetear contador mensual si cambia el mes
-                const mk = `${d.getFullYear()}-${d.getMonth()}`;
-                if (mk !== currentMonthKey) {
-                    currentMonthKey = mk;
-                    monthCounts = new Map();
-                }
-
-                const adults = workingHistory.filter(a => a.isAdult);
-                const minors = workingHistory.filter(a => !a.isAdult);
-
-                const minorsNeeded = 4 - adultRatio;
-
-                const lastWeekAdults = lastWeekTeam.filter(a => a.isAdult);
-                const lastWeekMinors = lastWeekTeam.filter(a => !a.isAdult);
-
-                const selectedAdults = selectAcolytesForMass(adults, adultRatio, lastWeekAdults, monthCounts);
-                const selectedMinors = selectAcolytesForMass(minors, minorsNeeded, lastWeekMinors, monthCounts);
-
-                day.team = [...selectedMinors, ...selectedAdults];
-
-                // Actualizar participaciones solo en la copia local
-                day.team.forEach(member => {
-                    const acolyte = workingHistory.find(a => a.id === member.id);
-                    if (acolyte) {
-                        acolyte.participations++;
-                    }
-                    monthCounts.set(member.id, (monthCounts.get(member.id) || 0) + 1);
-                });
-
-                lastWeekTeam = [...day.team];
-                schedule.push(day);
-            }
-        }
-
-        // NO actualizar el estado real, solo retornar la simulación
-        return schedule;
+        return coreGenerateSchedule(months);
     };
 
     const generateExcel = () => {
         // Usar vista previa para no modificar historial
-        const schedule = generateSchedulePreview(scheduleMonths);
+        const { schedule, finalHistory } = generateSchedulePreview(scheduleMonths);
         const wb = XLSX.utils.book_new();
 
         // Primera hoja: Lista de acólitos
         const acolytesList = [
             ['#', 'Nombre', 'Categoría', 'Participaciones'],
-            ...participationHistory.map(a => [
+            ...finalHistory.map(a => [
                 a.id,
                 a.name,
                 a.isAdult ? 'Mayor' : 'Menor',
@@ -328,7 +232,7 @@ export const useScheduleGenerator = (acolytes) => {
 
     const generatePDF = () => {
         // Usar vista previa para no modificar historial
-        const schedule = generateSchedulePreview(scheduleMonths);
+        const { schedule } = generateSchedulePreview(scheduleMonths);
         const doc = new jsPDF();
 
         // Evitar caracteres raros: usar fuente estándar y NO emojis
@@ -453,13 +357,14 @@ export const useScheduleGenerator = (acolytes) => {
     };
 
     const generateReportPDF = () => {
+        const { finalHistory } = generateSchedulePreview(scheduleMonths);
         const doc = new jsPDF();
 
         doc.setFontSize(16);
         doc.text('Reporte de Participaciones', 14, 15);
 
-        const totalParticipations = participationHistory.reduce((acc, a) => acc + a.participations, 0);
-        const reportData = participationHistory.map(a => [
+        const totalParticipations = finalHistory.reduce((acc, a) => acc + a.participations, 0);
+        const reportData = finalHistory.map(a => [
             a.name,
             a.participations,
             `${((a.participations / totalParticipations) * 100).toFixed(2)}%`,
@@ -475,12 +380,13 @@ export const useScheduleGenerator = (acolytes) => {
     };
 
     const generateReportExcel = () => {
+        const { finalHistory } = generateSchedulePreview(scheduleMonths);
         const wb = XLSX.utils.book_new();
-        const totalParticipations = participationHistory.reduce((acc, a) => acc + a.participations, 0);
+        const totalParticipations = finalHistory.reduce((acc, a) => acc + a.participations, 0);
 
         const reportData = [
             ['Nombre', 'Participaciones', 'Porcentaje'],
-            ...participationHistory.map(a => [
+            ...finalHistory.map(a => [
                 a.name,
                 a.participations,
                 `${((a.participations / totalParticipations) * 100).toFixed(2)}%`,
@@ -517,5 +423,7 @@ export const useScheduleGenerator = (acolytes) => {
         calculateExpectedParticipations,
         participationHistory,
         resetParticipations,
+        initialTeam,
+        setInitialTeam,
     };
 };

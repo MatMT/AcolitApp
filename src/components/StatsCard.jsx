@@ -20,103 +20,110 @@ export const StatsCard = ({
     const minorsNeeded = 4 - adultRatio;
 
     return (
-        <Card className="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-                <CardTitle className="text-2xl">📊 Estadísticas de Distribución</CardTitle>
+        <Card className="mb-8 border-slate-200/60 shadow-lg shadow-indigo-100/50 bg-white/80 backdrop-blur-xl">
+            <CardHeader className="border-b border-slate-100 pb-4">
+                <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span className="bg-indigo-100 text-indigo-600 p-2 rounded-lg">📊</span>
+                    Estadísticas de Distribución
+                </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Información general */}
-                    <div className="space-y-4">
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <h3 className="font-semibold text-lg mb-3 text-indigo-700">
-                                📅 Información del Periodo
+                    <div className="space-y-6">
+                        <div className="bg-gradient-to-br from-white to-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <span className="bg-blue-100 text-blue-600 p-1.5 rounded-md text-sm">📅</span>
+                                Información del Periodo
                             </h3>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Duración:</span>
-                                    <span className="font-semibold">{scheduleMonths} meses</span>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Duración:</span>
+                                    <span className="font-bold text-slate-800">{scheduleMonths} meses</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Domingos totales:</span>
-                                    <span className="font-semibold text-blue-600">{stats.sundaysCount}</span>
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Domingos totales:</span>
+                                    <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{stats.sundaysCount}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Espacios por misa:</span>
-                                    <span className="font-semibold">4 acólitos</span>
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Espacios por misa:</span>
+                                    <span className="font-bold text-slate-800">4 acólitos</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Total de espacios:</span>
-                                    <span className="font-semibold text-green-600">{stats.totalSlots}</span>
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Total de espacios:</span>
+                                    <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">{stats.totalSlots}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <h3 className="font-semibold text-lg mb-3 text-indigo-700">
-                                👥 Composición de Equipos
+                        <div className="bg-gradient-to-br from-white to-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <span className="bg-indigo-100 text-indigo-600 p-1.5 rounded-md text-sm">👥</span>
+                                Composición de Equipos
                             </h3>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Mayores por misa:</span>
-                                    <span className="font-semibold text-purple-600">{adultRatio}</span>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Mayores por misa:</span>
+                                    <span className="font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">{adultRatio}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Menores por misa:</span>
-                                    <span className="font-semibold text-orange-600">{minorsNeeded}</span>
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Menores por misa:</span>
+                                    <span className="font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">{minorsNeeded}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Participaciones esperadas */}
-                    <div className="space-y-4">
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <h3 className="font-semibold text-lg mb-3 text-purple-700">
-                                👨‍👦 Acólitos Mayores
+                    <div className="space-y-6">
+                        <div className="bg-gradient-to-br from-white to-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <span className="bg-purple-100 text-purple-600 p-1.5 rounded-md text-sm">👨‍👦</span>
+                                Acólitos Mayores
                             </h3>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Total de mayores:</span>
-                                    <span className="font-semibold">{stats.adultsCount}</span>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Total de mayores:</span>
+                                    <span className="font-bold text-slate-800">{stats.adultsCount}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Espacios totales:</span>
-                                    <span className="font-semibold">{stats.sundaysCount * adultRatio}</span>
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Espacios totales:</span>
+                                    <span className="font-bold text-slate-800">{stats.sundaysCount * adultRatio}</span>
                                 </div>
-                                <div className="flex justify-between border-t pt-2 mt-2">
-                                    <span className="text-gray-700 font-medium">Veces por persona:</span>
-                                    <span className="font-bold text-lg text-purple-600">
-                                        ~{stats.expectedPerAdult} veces
+                                <div className="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-100 mt-2">
+                                    <span className="text-purple-900 font-semibold text-sm">Frecuencia estimada:</span>
+                                    <span className="font-black text-lg text-purple-600 drop-shadow-sm">
+                                        ~{stats.expectedPerAdult} <span className="text-xs font-medium text-purple-400">veces c/u</span>
                                     </span>
                                 </div>
                                 {stats.adultsCount === 0 && (
-                                    <p className="text-red-500 text-sm mt-2">⚠️ No hay acólitos mayores registrados</p>
+                                    <p className="text-rose-500 text-xs font-medium mt-2 flex items-center gap-1"><span className="text-base">⚠️</span> No hay acólitos mayores registrados</p>
                                 )}
                             </div>
                         </div>
 
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <h3 className="font-semibold text-lg mb-3 text-orange-700">
-                                👶 Acólitos Menores
+                        <div className="bg-gradient-to-br from-white to-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <span className="bg-orange-100 text-orange-600 p-1.5 rounded-md text-sm">👶</span>
+                                Acólitos Menores
                             </h3>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Total de menores:</span>
-                                    <span className="font-semibold">{stats.minorsCount}</span>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Total de menores:</span>
+                                    <span className="font-bold text-slate-800">{stats.minorsCount}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Espacios totales:</span>
-                                    <span className="font-semibold">{stats.sundaysCount * minorsNeeded}</span>
+                                <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
+                                    <span className="text-slate-600 text-sm font-medium">Espacios totales:</span>
+                                    <span className="font-bold text-slate-800">{stats.sundaysCount * minorsNeeded}</span>
                                 </div>
-                                <div className="flex justify-between border-t pt-2 mt-2">
-                                    <span className="text-gray-700 font-medium">Veces por persona:</span>
-                                    <span className="font-bold text-lg text-orange-600">
-                                        ~{stats.expectedPerMinor} veces
+                                <div className="flex justify-between items-center bg-orange-50 p-3 rounded-lg border border-orange-100 mt-2">
+                                    <span className="text-orange-900 font-semibold text-sm">Frecuencia estimada:</span>
+                                    <span className="font-black text-lg text-orange-600 drop-shadow-sm">
+                                        ~{stats.expectedPerMinor} <span className="text-xs font-medium text-orange-400">veces c/u</span>
                                     </span>
                                 </div>
                                 {stats.minorsCount === 0 && (
-                                    <p className="text-red-500 text-sm mt-2">⚠️ No hay acólitos menores registrados</p>
+                                    <p className="text-rose-500 text-xs font-medium mt-2 flex items-center gap-1"><span className="text-base">⚠️</span> No hay acólitos menores registrados</p>
                                 )}
                             </div>
                         </div>
@@ -125,29 +132,27 @@ export const StatsCard = ({
 
                 {/* Resumen de distribución actual */}
                 {participationHistory && participationHistory.length > 0 && (
-                    <div className="mt-6 bg-white p-4 rounded-lg shadow-sm">
-                        <h3 className="font-semibold text-lg mb-3 text-green-700">
-                            📈 Distribución Actual de Participaciones
+                    <div className="mt-8 bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <h3 className="font-bold text-slate-700 mb-6 flex items-center gap-2">
+                            <span className="bg-emerald-100 text-emerald-600 p-1.5 rounded-md text-sm">📈</span>
+                            Distribución Actual de Participaciones
                         </h3>
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="grid md:grid-cols-2 gap-8">
                             {adults.length > 0 && (
                                 <div>
-                                    <h4 className="font-medium mb-2 text-purple-600">Mayores</h4>
-                                    <div className="space-y-1 text-sm max-h-40 overflow-y-auto">
+                                    <h4 className="font-bold mb-3 text-purple-700 border-b border-purple-100 pb-2">Mayores</h4>
+                                    <div className="space-y-2 text-sm max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                         {participationHistory
                                             .filter(p => p.isAdult)
                                             .sort((a, b) => b.participations - a.participations)
                                             .map(p => (
-                                                <div key={p.id} className="flex justify-between items-center py-1 px-2 hover:bg-gray-50 rounded">
-                                                    <span className="text-gray-700">{p.name}</span>
-                                                    <span className="font-semibold text-purple-600">
-                                                        {Number(p.participations).toLocaleString()} 
-                                                        {stats.expectedPerAdult > 0 && (
-                                                            <span className="text-xs text-gray-500 ml-1">
-                                                                ({Math.min(999, Math.round((p.participations / stats.expectedPerAdult) * 100))}%)
-                                                            </span>
-                                                        )}
-                                                    </span>
+                                                <div key={p.id} className="group flex justify-between items-center p-2.5 bg-white border border-slate-100 hover:border-purple-200 rounded-lg hover:shadow-sm transition-all">
+                                                    <span className="text-slate-700 font-medium group-hover:text-purple-700 transition-colors">{p.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">
+                                                            {Number(p.participations).toLocaleString()}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             ))}
                                     </div>
@@ -155,22 +160,19 @@ export const StatsCard = ({
                             )}
                             {minors.length > 0 && (
                                 <div>
-                                    <h4 className="font-medium mb-2 text-orange-600">Menores</h4>
-                                    <div className="space-y-1 text-sm max-h-40 overflow-y-auto">
+                                    <h4 className="font-bold mb-3 text-orange-700 border-b border-orange-100 pb-2">Menores</h4>
+                                    <div className="space-y-2 text-sm max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                         {participationHistory
                                             .filter(p => !p.isAdult)
                                             .sort((a, b) => b.participations - a.participations)
                                             .map(p => (
-                                                <div key={p.id} className="flex justify-between items-center py-1 px-2 hover:bg-gray-50 rounded">
-                                                    <span className="text-gray-700">{p.name}</span>
-                                                    <span className="font-semibold text-orange-600">
-                                                        {Number(p.participations).toLocaleString()}
-                                                        {stats.expectedPerMinor > 0 && (
-                                                            <span className="text-xs text-gray-500 ml-1">
-                                                                ({Math.min(999, Math.round((p.participations / stats.expectedPerMinor) * 100))}%)
-                                                            </span>
-                                                        )}
-                                                    </span>
+                                                <div key={p.id} className="group flex justify-between items-center p-2.5 bg-white border border-slate-100 hover:border-orange-200 rounded-lg hover:shadow-sm transition-all">
+                                                    <span className="text-slate-700 font-medium group-hover:text-orange-700 transition-colors">{p.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
+                                                            {Number(p.participations).toLocaleString()}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             ))}
                                     </div>
@@ -182,14 +184,17 @@ export const StatsCard = ({
 
                 {/* Advertencias */}
                 {(stats.adultsCount < adultRatio || stats.minorsCount < minorsNeeded) && (
-                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-yellow-800 font-medium">⚠️ Advertencia</p>
-                        <p className="text-yellow-700 text-sm mt-1">
-                            {stats.adultsCount < adultRatio && 
-                                `No hay suficientes acólitos mayores. Se necesitan al menos ${adultRatio} mayores por misa. `}
-                            {stats.minorsCount < minorsNeeded && 
-                                `No hay suficientes acólitos menores. Se necesitan al menos ${minorsNeeded} menores por misa.`}
-                        </p>
+                    <div className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-xl shadow-sm flex gap-3 items-start">
+                        <span className="text-xl">⚠️</span>
+                        <div>
+                            <p className="text-amber-800 font-bold">Atención Requerida</p>
+                            <p className="text-amber-700 text-sm mt-1 leading-relaxed">
+                                {stats.adultsCount < adultRatio && 
+                                    `No hay suficientes acólitos mayores. Se necesitan al menos ${adultRatio} mayores por misa. `}
+                                {stats.minorsCount < minorsNeeded && 
+                                    `No hay suficientes acólitos menores. Se necesitan al menos ${minorsNeeded} menores por misa.`}
+                            </p>
+                        </div>
                     </div>
                 )}
             </CardContent>
